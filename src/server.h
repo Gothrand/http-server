@@ -31,17 +31,58 @@ enum RequestMethod
     UNKNOWN
 };
 
-std::string handle_get()
+/*
+ * @brief Builds an HTTP response given a status code and the content to be delivered along with the response.
+ *
+ * @param stat_code: enum StatusCode to determine what headers to put in the response
+ * @param content: string containing the content to be delievered along with the HTTP response.
+ *
+ * @returns A string containing the HTTP response.
+ */
+std::string build_http_response(const StatusCode stat_code, const std::string &content)
 {
+    const int response_len = content.length();
+    std::string header = "";
+    switch (stat_code)
+    {
+    case OK:
+        header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_len) + "\r\n\r\n";
+    case BAD_RQST:
+        header = "HTTP/1.1 400 BAD REQUEST\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_len) + "\r\n\r\n";
+    case NOT_FOUND:
+        header = "HTTP/1.1 404 NOT FOUND\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_len) + "\r\n\r\n";
+    default:
+        header = "HTTP/1.1 500 SERVER ERROR\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_len) + "\r\n\r\n";
+    }
+
+    return header + content;
+}
+
+/*
+ * @brief Handles a get request with a given path.
+ *
+ * @param path: Path to given endpoint.
+ *
+ * @returns The response as a std::string
+ */
+std::string handle_get(const std::string &path)
+{
+    // TODO: Build logic to determine if the given path is a valid path
+    // for the system.
+
     std::string html_content = get_content_from_file("index.html");
     std::string css_content = get_content_from_file("styles/style.css");
 
     html_content = std::regex_replace(html_content, std::regex("<style></style>"), "<style>" + css_content + "</style>");
 
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
+    std::string response = build_http_response(OK, html_content);
     return response;
 }
 
+/*
+ * @brief A class representing an HTTPServer. Handles initialization of the server
+ * along with any cleanup needed for teardown.
+ */
 class HTTPServer
 {
 public:
@@ -83,6 +124,7 @@ public:
 
         std::cout << "Server is listening on port 8080\n"
                   << std::endl;
+        std::cout << "`curl localhost:8080\n`";
     }
     ~HTTPServer()
     {
@@ -141,13 +183,27 @@ public:
 
         std::cout << req_method << " " << request_path << std::endl;
 
-        return handle_get();
+        switch (req_method)
+        {
+        case GET:
+            return handle_get(request_path);
+        default:
+            // TODO: Create html template for a BAD REQUEST and any other related http errors.
+            return build_http_response(BAD_RQST, "<html><head><title>400</title></head><body>400 Bad Request</body></html>");
+        }
     }
 
-    // int get_server_fd() const { return server_fd; }
-
+    /*
+     * @brief Takes in an HTTP request and parses it for its request method
+     * and the endpoint the request wants.
+     *
+     * @param request: The HTTP request to parse.
+     *
+     * @returns A vector containing the request method, and the request path.
+     */
     std::vector<std::string> parse_request(const std::string &request)
     {
+        // TODO: maybe use something lighter than a vector?
         std::vector<std::string> vals = split(request);
         while (vals.size() != 2)
         {
@@ -156,6 +212,13 @@ public:
         return vals;
     }
 
+    /*
+     * @brief Returns the enum RequestMethod based on the given string req_type.
+     *
+     * @param req_type: The request type as a string.
+     *
+     * @returns The enum representing that request type.
+     */
     RequestMethod get_req_method(const std::string &req_type)
     {
         if (req_type == "GET")
