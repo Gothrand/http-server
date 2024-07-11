@@ -15,7 +15,6 @@ void signal_callback_handler(const int signum)
 
 int main()
 {
-    // create a socket and get that socket's file descriptor
     signal(SIGINT, signal_callback_handler);
     HTTPServer server;
 
