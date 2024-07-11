@@ -1,8 +1,8 @@
 server: main.o
 	g++ -o server main.o
 
-main.o: main.cpp
-	g++ -c main.cpp
+main.o: src/main.cpp
+	g++ -c src/main.cpp
 
 clean:
 	rm *.o
