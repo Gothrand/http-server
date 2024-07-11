@@ -4,7 +4,7 @@ This is a simple personal project to learn about HTTP and to experiment with how
 
 ## Running
 
-`g++ main.cpp -o server`
+`make`
 
 `./server`
 
