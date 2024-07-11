@@ -4,6 +4,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <regex>
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
