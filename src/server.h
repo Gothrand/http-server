@@ -207,7 +207,7 @@ public:
     {
         // TODO: maybe use something lighter than a vector?
         std::vector<std::string> vals = split(request);
-        while (vals.size() != 2)
+        while (vals.size() > 2)
         {
             vals.pop_back();
         }
